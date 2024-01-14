@@ -68,21 +68,21 @@ const images = [
 const container = document.querySelector('.gallery');
 
 function galleryTemplate(item) {
-    return  `<li class="gallery-item">
-  <a class="gallery-link" href="${item.original}">
-    <img
-      class="gallery-image"
-      src="${item.preview}"
-      data-source="${item.original}"
-      alt="${item.description}"
-    />
-  </a>
-</li>`
+  return `<li class="gallery-item">
+    <a class="gallery-link" href="${item.original}">
+      <img
+        class="gallery-image"
+        src="${item.preview}"
+        data-source="${item.original}"
+        alt="${item.description}"
+      />
+    </a>
+  </li>`;
 }
 
 function productsListTemplate(images) {
-  return  images.map(galleryTemplate).join('');
- }
+  return images.map(galleryTemplate).join('');
+}
 
 function render() {
   const markup = productsListTemplate(images);
@@ -94,24 +94,30 @@ render();
 container.addEventListener('click', onGalleryClick);
 
 function onGalleryClick(event) {
-    event.preventDefault();
-    if (event.target.nodeName !== 'IMG') {
-      return;
-    }
-  
-    const imageSrc = event.target.dataset.source;
-  
-    const instance = basicLightbox.create(`
-      <img src="${imageSrc}" width="800" height="600">
-    `);
-  
-    instance.show();
-  
-    // Додавання слухача подій для клавіші Escape
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        instance.close();
-      }
-    }, { once: true }); // Опція { once: true } забезпечить видалення слухача після першого використання
-   }
+  event.preventDefault();
 
+  if (!event.target.classList.contains('gallery-image')) {
+    return;
+  }
+
+  const imageSrc = event.target.dataset.source;
+
+  const instance = basicLightbox.create(`
+    <img src="${imageSrc}" width="800" height="600">
+  `, {
+    onShow: () => {
+      document.addEventListener('keydown', onKeyPress);
+    },
+    onClose: () => {    
+      document.removeEventListener('keydown', onKeyPress);
+    },
+  });
+
+  instance.show();
+
+  function onKeyPress(e) {
+    if (e.key === 'Escape') {
+      instance.close();
+    }
+  }
+}
